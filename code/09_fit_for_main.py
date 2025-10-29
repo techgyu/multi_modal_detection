@@ -47,11 +47,11 @@ def send_n_key_to_arma3(win):
 	return True
 
 def main():
-	MODES = ['v', 'nv', 'th', 'grid']
+	MODES = ['visual', 'nvg', 'thermal', 'grid']
 	MODE_DIRS = {
-		'v': 'E:/data/dataset/visual',
-		'nv': 'E:/data/dataset/nvg',
-		'th': 'E:/data/dataset/thermal',
+		'visual': 'E:/data/dataset/visual',
+		'nvg': 'E:/data/dataset/nvg',
+		'thermal': 'E:/data/dataset/thermal',
 		'grid': 'E:/data/dataset/grid',
 	}
 	time.sleep(5) 
@@ -91,7 +91,7 @@ def main():
 		# 3-way 캡처 및 화면 전환
 		for mode in MODES:
 			dir_path = MODE_DIRS[mode]
-			save_path = os.path.join(dir_path, f"{idx:06d}_{mode}.png")
+			save_path = os.path.join(dir_path, f"{idx:06d}_{mode[0]}.png")  # visual -> v, nvg -> n, thermal -> t
 			if mode == 'grid':
 				# ']'키 1회 전송 후 캡처
 				VK_RBRACKET_SCAN = 0x1B  # ']'의 스캔코드
