@@ -5,18 +5,18 @@ import os
 import numpy as np
 
 # 테스트할 thermal 이미지 폴더 경로
-thermal_dir = r"data\20251029_Takistan_1400_Taleban_1\thermal"
+thermal_dir = r"output\20251029_Takistan_1400_Taleban_2\thermal"
 
 if not os.path.exists(thermal_dir):
     print(f"❌ 경로를 찾을 수 없습니다: {thermal_dir}")
     exit()
 
 # 출력 폴더
-output_dir = 'test_thermal_detection'
+output_dir = os.path.join('output', 'test_thermal_detection')
 os.makedirs(output_dir, exist_ok=True)
 
 # YOLO 모델 로드
-print("YOLO 모델 로드 중...")
+print("YOLO 모델 로드 중..." )
 model = YOLO('model/yolov9e.pt')
 model.to('cuda')
 
@@ -106,4 +106,5 @@ if len(viz_images) > 0:
 else:
     print("❌ 처리된 이미지가 없어 동영상을 생성할 수 없습니다.")
 
-print(f"\n📁 결과 폴더: {output_dir}/")
+print(f"\n📁 결과 폴더: {output_dir}")
+print(f"   시각화 이미지와 동영상이 저장되었습니다.")

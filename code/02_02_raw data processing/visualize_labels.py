@@ -4,7 +4,7 @@ import glob
 from concurrent.futures import ThreadPoolExecutor
 import numpy as np
 
-folder_name = '20251029_Takistan_1400_Taleban_1'  # output\ 빼고 폴더명만
+folder_name = '20251029_Takistan_12 00_Taleban'  # output\ 빼고 폴더명만
 output_dir = os.path.join('output', folder_name)
 
 # 폴더 경로
@@ -14,7 +14,7 @@ nvg_dir = os.path.join(output_dir, 'nvg')
 label_dir = os.path.join(output_dir, 'labels')
 
 # 시각화 결과 저장 폴더
-viz_dir = os.path.join('visualization', folder_name)
+viz_dir = os.path.join('output', 'visualization', folder_name)
 os.makedirs(os.path.join(viz_dir, 'visual'), exist_ok=True)
 os.makedirs(os.path.join(viz_dir, 'thermal'), exist_ok=True)
 if os.path.exists(nvg_dir):
@@ -99,10 +99,67 @@ print(f'총 {len(label_files)}개의 라벨 파일 처리 중...')
 with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
     results = list(executor.map(process_single_label, label_files))
 
-print(f'\n시각화 완료! 결과는 visualization/{folder_name}/ 폴더에 저장되었습니다.')
-print(f'Visual: {len(glob.glob(os.path.join(viz_dir, "visual", "*.png")))}장')
-print(f'Thermal: {len(glob.glob(os.path.join(viz_dir, "thermal", "*.png")))}장')
+print(f'\n시각화 완료! 결과는 output/visualization/{folder_name}/ 폴더에 저장되었습니다.')
+visual_count = len(glob.glob(os.path.join(viz_dir, "visual", "*.png")))
+thermal_count = len(glob.glob(os.path.join(viz_dir, "thermal", "*.png")))
+print(f'Visual: {visual_count}장')
+print(f'Thermal: {thermal_count}장')
 if os.path.exists(nvg_dir):
-    print(f'NVG: {len(glob.glob(os.path.join(viz_dir, "nvg", "*.png")))}장')
+    nvg_count = len(glob.glob(os.path.join(viz_dir, "nvg", "*.png")))
+    print(f'NVG: {nvg_count}장')
 else:
     print('NVG: 없음 (주간 데이터)')
+
+# 동영상 생성
+print('\n동영상 생성 중...')
+
+def create_video(image_dir, output_path, fps=1/0.3):
+    """이미지들을 동영상으로 변환"""
+    image_files = sorted(glob.glob(os.path.join(image_dir, '*.png')))
+    
+    if len(image_files) == 0:
+        return False
+    
+    # 첫 번째 이미지로 크기 확인
+    first_img = cv2.imread(image_files[0])
+    if first_img is None:
+        return False
+    
+    height, width = first_img.shape[:2]
+    
+    # VideoWriter 설정
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    video_writer = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
+    
+    for img_path in image_files:
+        img = cv2.imread(img_path)
+        if img is not None:
+            video_writer.write(img)
+    
+    video_writer.release()
+    return True
+
+# Visual 동영상 생성
+if visual_count > 0:
+    visual_video_path = os.path.join(viz_dir, 'visual_detection.mp4')
+    if create_video(os.path.join(viz_dir, 'visual'), visual_video_path):
+        print(f'✅ Visual 동영상 생성: {visual_video_path}')
+        print(f'   - 프레임: {visual_count}장, 재생시간: {visual_count * 0.3:.1f}초')
+
+# Thermal 동영상 생성
+if thermal_count > 0:
+    thermal_video_path = os.path.join(viz_dir, 'thermal_detection.mp4')
+    if create_video(os.path.join(viz_dir, 'thermal'), thermal_video_path):
+        print(f'✅ Thermal 동영상 생성: {thermal_video_path}')
+        print(f'   - 프레임: {thermal_count}장, 재생시간: {thermal_count * 0.3:.1f}초')
+
+# NVG 동영상 생성 (있는 경우)
+if os.path.exists(nvg_dir):
+    nvg_count_for_video = len(glob.glob(os.path.join(viz_dir, 'nvg', '*.png')))
+    if nvg_count_for_video > 0:
+        nvg_video_path = os.path.join(viz_dir, 'nvg_detection.mp4')
+        if create_video(os.path.join(viz_dir, 'nvg'), nvg_video_path):
+            print(f'✅ NVG 동영상 생성: {nvg_video_path}')
+            print(f'   - 프레임: {nvg_count_for_video}장, 재생시간: {nvg_count_for_video * 0.3:.1f}초')
+
+print(f'\n📁 모든 작업 완료! 결과: output/visualization/{folder_name}/')

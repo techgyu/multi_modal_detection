@@ -107,6 +107,7 @@ def main():
 			else:
 				capture_arma3_window(win, save_path) # 화면 캡처
 				print("capture")
+				time.sleep(2)  # 캡처 대기 시간: 2s
 				send_n_key_to_arma3(win) # 화면 전환
 				print("change vision")
 				time.sleep(2)  # 화면 전환 대기 시간: 2s
